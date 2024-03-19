@@ -4,7 +4,7 @@ members = [
     "binder_tokio",
     "binder_ndk_sys",
     "example",
-    "tests",
+    "tests", "android-powerstats",
 ]
 
 exclude = ["target/*"]

@@ -1,0 +1,14 @@
+[package]
+name = "android-powerstats"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+readme.workspace = true
+description.workspace = true
+license.workspace = true
+
+[dependencies]
+binder = { package = "binder_ndk", path = "../binder" }
+lazy_static = "1.4.0"
