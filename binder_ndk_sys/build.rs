@@ -17,6 +17,8 @@ rust-version = "1.67"
 
 [lib]
 crate-type = ["cdylib"]
+
+[workspace]
 "#;
 
 fn build_stub() -> Result<()> {
@@ -42,7 +44,7 @@ fn build_stub() -> Result<()> {
     f.flush()?;
 
     let target = env::var("TARGET")?;
-    Command::new("cargo")
+    let s = Command::new("cargo")
         .arg("build")
         .arg("--target")
         .arg(&target)
@@ -52,6 +54,8 @@ fn build_stub() -> Result<()> {
         .arg(&outdir)
         .current_dir(&project_path)
         .status()?;
+
+    assert!(s.success(), "{s:?}");
 
     // we always use debug build for stub due to speed!
     println!(
