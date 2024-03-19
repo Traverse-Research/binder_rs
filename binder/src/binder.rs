@@ -286,7 +286,7 @@ pub trait IBinder {
 /// given object can only be associated with one class. Two objects with
 /// different classes are incompatible, even if both classes have the same
 /// interface descriptor.
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct InterfaceClass(*const sys::AIBinder_Class);
 
 impl InterfaceClass {
