@@ -1,5 +1,5 @@
 #![forbid(unsafe_code)]
-#![rustfmt::skip]
+#![cfg_attr(rustfmt, rustfmt_skip)]
 #[derive(Debug)]
 pub struct EnergyConsumerAttribution {
   pub uid: i32,

@@ -1,5 +1,5 @@
 #![forbid(unsafe_code)]
-#![rustfmt::skip]
+#![cfg_attr(rustfmt, rustfmt_skip)]
 #![allow(non_upper_case_globals)]
 #![allow(non_snake_case)]
 #[allow(unused_imports)] use binder::binder_impl::IBinderInternal;
@@ -37,59 +37,59 @@ pub trait IPowerStatsAsync<P>: binder::Interface + Send {
   fn getEnergyMeterInfo<'a>(&'a self) -> binder::BoxFuture<'a, binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_7_Channel>>>;
   fn readEnergyMeter<'a>(&'a self, _arg_channelIds: &'a [i32]) -> binder::BoxFuture<'a, binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_17_EnergyMeasurement>>>;
 }
-#[::async_trait::async_trait]
-pub trait IPowerStatsAsyncServer: binder::Interface + Send {
-  fn get_descriptor() -> &'static str where Self: Sized { "android.hardware.power.stats.IPowerStats" }
-  async fn getPowerEntityInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_11_PowerEntity>>;
-  async fn getStateResidency(&self, _arg_powerEntityIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_20_StateResidencyResult>>;
-  async fn getEnergyConsumerInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_14_EnergyConsumer>>;
-  async fn getEnergyConsumed(&self, _arg_energyConsumerIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_20_EnergyConsumerResult>>;
-  async fn getEnergyMeterInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_7_Channel>>;
-  async fn readEnergyMeter(&self, _arg_channelIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_17_EnergyMeasurement>>;
-}
-impl BnPowerStats {
-  /// Create a new async binder service.
-  pub fn new_async_binder<T, R>(inner: T, rt: R, features: binder::BinderFeatures) -> binder::Strong<dyn IPowerStats>
-  where
-    T: IPowerStatsAsyncServer + binder::Interface + Send + Sync + 'static,
-    R: binder::binder_impl::BinderAsyncRuntime + Send + Sync + 'static,
-  {
-    struct Wrapper<T, R> {
-      _inner: T,
-      _rt: R,
-    }
-    impl<T, R> binder::Interface for Wrapper<T, R> where T: binder::Interface, R: Send + Sync {
-      fn as_binder(&self) -> binder::SpIBinder { self._inner.as_binder() }
-      fn dump(&self, _file: &std::fs::File, _args: &[&std::ffi::CStr]) -> std::result::Result<(), binder::StatusCode> { self._inner.dump(_file, _args) }
-    }
-    impl<T, R> IPowerStats for Wrapper<T, R>
-    where
-      T: IPowerStatsAsyncServer + Send + Sync + 'static,
-      R: binder::binder_impl::BinderAsyncRuntime + Send + Sync + 'static,
-    {
-      fn getPowerEntityInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_11_PowerEntity>> {
-        self._rt.block_on(self._inner.getPowerEntityInfo())
-      }
-      fn getStateResidency(&self, _arg_powerEntityIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_20_StateResidencyResult>> {
-        self._rt.block_on(self._inner.getStateResidency(_arg_powerEntityIds))
-      }
-      fn getEnergyConsumerInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_14_EnergyConsumer>> {
-        self._rt.block_on(self._inner.getEnergyConsumerInfo())
-      }
-      fn getEnergyConsumed(&self, _arg_energyConsumerIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_20_EnergyConsumerResult>> {
-        self._rt.block_on(self._inner.getEnergyConsumed(_arg_energyConsumerIds))
-      }
-      fn getEnergyMeterInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_7_Channel>> {
-        self._rt.block_on(self._inner.getEnergyMeterInfo())
-      }
-      fn readEnergyMeter(&self, _arg_channelIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_17_EnergyMeasurement>> {
-        self._rt.block_on(self._inner.readEnergyMeter(_arg_channelIds))
-      }
-    }
-    let wrapped = Wrapper { _inner: inner, _rt: rt };
-    Self::new_binder(wrapped, features)
-  }
-}
+// #[::async_trait::async_trait]
+// pub trait IPowerStatsAsyncServer: binder::Interface + Send {
+//   fn get_descriptor() -> &'static str where Self: Sized { "android.hardware.power.stats.IPowerStats" }
+//   async fn getPowerEntityInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_11_PowerEntity>>;
+//   async fn getStateResidency(&self, _arg_powerEntityIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_20_StateResidencyResult>>;
+//   async fn getEnergyConsumerInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_14_EnergyConsumer>>;
+//   async fn getEnergyConsumed(&self, _arg_energyConsumerIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_20_EnergyConsumerResult>>;
+//   async fn getEnergyMeterInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_7_Channel>>;
+//   async fn readEnergyMeter(&self, _arg_channelIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_17_EnergyMeasurement>>;
+// }
+// impl BnPowerStats {
+//   /// Create a new async binder service.
+//   pub fn new_async_binder<T, R>(inner: T, rt: R, features: binder::BinderFeatures) -> binder::Strong<dyn IPowerStats>
+//   where
+//     T: IPowerStatsAsyncServer + binder::Interface + Send + Sync + 'static,
+//     R: binder::binder_impl::BinderAsyncRuntime + Send + Sync + 'static,
+//   {
+//     struct Wrapper<T, R> {
+//       _inner: T,
+//       _rt: R,
+//     }
+//     impl<T, R> binder::Interface for Wrapper<T, R> where T: binder::Interface, R: Send + Sync {
+//       fn as_binder(&self) -> binder::SpIBinder { self._inner.as_binder() }
+//       fn dump(&self, _file: &std::fs::File, _args: &[&std::ffi::CStr]) -> std::result::Result<(), binder::StatusCode> { self._inner.dump(_file, _args) }
+//     }
+//     impl<T, R> IPowerStats for Wrapper<T, R>
+//     where
+//       T: IPowerStatsAsyncServer + Send + Sync + 'static,
+//       R: binder::binder_impl::BinderAsyncRuntime + Send + Sync + 'static,
+//     {
+//       fn getPowerEntityInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_11_PowerEntity>> {
+//         self._rt.block_on(self._inner.getPowerEntityInfo())
+//       }
+//       fn getStateResidency(&self, _arg_powerEntityIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_20_StateResidencyResult>> {
+//         self._rt.block_on(self._inner.getStateResidency(_arg_powerEntityIds))
+//       }
+//       fn getEnergyConsumerInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_14_EnergyConsumer>> {
+//         self._rt.block_on(self._inner.getEnergyConsumerInfo())
+//       }
+//       fn getEnergyConsumed(&self, _arg_energyConsumerIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_20_EnergyConsumerResult>> {
+//         self._rt.block_on(self._inner.getEnergyConsumed(_arg_energyConsumerIds))
+//       }
+//       fn getEnergyMeterInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_7_Channel>> {
+//         self._rt.block_on(self._inner.getEnergyMeterInfo())
+//       }
+//       fn readEnergyMeter(&self, _arg_channelIds: &[i32]) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_17_EnergyMeasurement>> {
+//         self._rt.block_on(self._inner.readEnergyMeter(_arg_channelIds))
+//       }
+//     }
+//     let wrapped = Wrapper { _inner: inner, _rt: rt };
+//     Self::new_binder(wrapped, features)
+//   }
+// }
 pub trait IPowerStatsDefault: Send + Sync {
   fn getPowerEntityInfo(&self) -> binder::Result<Vec<crate::mangled::_7_android_8_hardware_5_power_5_stats_11_PowerEntity>> {
     Err(binder::StatusCode::UNKNOWN_TRANSACTION.into())

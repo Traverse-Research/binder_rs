@@ -1,10 +1,10 @@
 #![forbid(unsafe_code)]
-#![rustfmt::skip]
+#![cfg_attr(rustfmt, rustfmt_skip)]
 #[derive(Debug)]
 pub struct EnergyConsumer {
   pub id: i32,
   pub ordinal: i32,
-  pub type: crate::mangled::_7_android_8_hardware_5_power_5_stats_18_EnergyConsumerType,
+  pub r#type: crate::mangled::_7_android_8_hardware_5_power_5_stats_18_EnergyConsumerType,
   pub name: String,
 }
 impl Default for EnergyConsumer {
@@ -12,7 +12,7 @@ impl Default for EnergyConsumer {
     Self {
       id: 0,
       ordinal: 0,
-      type: crate::mangled::_7_android_8_hardware_5_power_5_stats_18_EnergyConsumerType::OTHER,
+      r#type: crate::mangled::_7_android_8_hardware_5_power_5_stats_18_EnergyConsumerType::OTHER,
       name: Default::default(),
     }
   }
@@ -22,7 +22,7 @@ impl binder::Parcelable for EnergyConsumer {
     parcel.sized_write(|subparcel| {
       subparcel.write(&self.id)?;
       subparcel.write(&self.ordinal)?;
-      subparcel.write(&self.type)?;
+      subparcel.write(&self.r#type)?;
       subparcel.write(&self.name)?;
       Ok(())
     })
@@ -36,7 +36,7 @@ impl binder::Parcelable for EnergyConsumer {
         self.ordinal = subparcel.read()?;
       }
       if subparcel.has_more_data() {
-        self.type = subparcel.read()?;
+        self.r#type = subparcel.read()?;
       }
       if subparcel.has_more_data() {
         self.name = subparcel.read()?;
