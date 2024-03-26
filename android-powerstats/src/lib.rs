@@ -5,6 +5,9 @@ pub(crate) mod mangled {
     pub(crate) use super::powerstats::mangled::*;
 }
 
+#[path = "android/os/IPowerStatsService.rs"]
+pub mod powerstatsservice;
+
 pub fn android_hardware_power_powerstats() -> binder::Result<()> {
     use powerstats::IPowerStats;
     let descriptor = <IPowerStats::BpPowerStats as IPowerStats::IPowerStats>::get_descriptor();

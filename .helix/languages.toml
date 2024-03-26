@@ -1,5 +1,5 @@
 [language-server.rust-analyzer.config.cargo]
-target = "aarch64-linux-android"
+# target = "aarch64-linux-android"
 features = "all"
 
 [language-server.rust-analyzer.config.check]
