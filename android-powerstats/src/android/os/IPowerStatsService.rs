@@ -176,9 +176,9 @@ impl BpPowerStatsService {
         _arg_resultReceiver: &crate::mangled::_7_android_2_os_14_ResultReceiver,
     ) -> binder::Result<binder::binder_impl::Parcel> {
         let mut aidl_data = self.binder.prepare_transact()?;
-        dbg!(&aidl_data.get_data_size());
+        // TODO: This should have written 0/1 first for nullability via writeTypedObject:
+        // https://cs.android.com/android/platform/superproject/main/+/main:out/soong/.intermediates/frameworks/base/framework-minus-apex-intdefs/android_common/e18b8e8d84cb9f664aa09a397b08c165/xref50/srcjars.xref/android/os/IPowerStatsService.java;l=135;drc=190beaa49a35da1d9dcf66be9cfccfd23b0eb467
         aidl_data.write(_arg_resultReceiver)?;
-        dbg!(&aidl_data.get_data_size());
         Ok(aidl_data)
     }
     fn read_response_getSupportedPowerMonitors(

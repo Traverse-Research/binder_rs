@@ -18,6 +18,7 @@ pub(crate) mod mangled {
     pub(crate) type _7_android_2_os_6_Bundle = super::Bundle;
 }
 
+/// https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/BaseBundle.java
 #[derive(Debug)]
 pub(crate) struct Bundle {}
 impl binder::binder_impl::Serialize for Bundle {
@@ -33,7 +34,40 @@ impl binder::binder_impl::Deserialize for Bundle {
     fn deserialize(
         parcel: &binder::binder_impl::BorrowedParcel<'_>,
     ) -> Result<Self, binder::StatusCode> {
-        todo!()
+        dbg!(parcel.get_data_size());
+
+        // Parse nullability because of writeTypedObject
+        // https://cs.android.com/android/platform/superproject/main/+/main:out/soong/.intermediates/frameworks/base/framework-minus-apex-intdefs/android_common/e18b8e8d84cb9f664aa09a397b08c165/xref50/srcjars.xref/com/android/internal/os/IResultReceiver.java;l=118;drc=190beaa49a35da1d9dcf66be9cfccfd23b0eb467
+        let is_set: i32 = parcel.read()?;
+        assert!(is_set == 1);
+
+        let length: i32 = parcel.read()?;
+        dbg!(length);
+        assert!(length >= 0, "Bad length {length}");
+        if length == 0 {
+            return Ok(Self {}); // Empty
+        }
+
+        // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/BaseBundle.java;l=1877-1879;drc=190beaa49a35da1d9dcf66be9cfccfd23b0eb467
+        const BUNDLE_MAGIC: i32 = 0x4C444E42; // 'B' 'N' 'D' 'L'
+        const BUNDLE_MAGIC_NATIVE: i32 = 0x4C444E44; // 'B' 'N' 'D' 'N'
+        let magic: i32 = parcel.read()?;
+        let is_java_bundle = magic == BUNDLE_MAGIC;
+        let is_native_bundle = magic == BUNDLE_MAGIC_NATIVE;
+        dbg!(is_java_bundle, is_native_bundle);
+
+        // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/BaseBundle.java;l=459;drc=190beaa49a35da1d9dcf66be9cfccfd23b0eb467
+        let count: i32 = parcel.read()?;
+        dbg!(count);
+        for i in 0..count {
+            let str: String = parcel.read()?;
+            dbg!(str);
+            // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/Parcel.java;l=4528;drc=190beaa49a35da1d9dcf66be9cfccfd23b0eb467
+            const VAL_PARCELABLEARRAY: i32 = 16; // length-prefixed
+            let t: i32 = parcel.read()?;
+            dbg!(&t);
+        }
+        Ok(Self {})
     }
 }
 
@@ -52,14 +86,12 @@ impl binder::binder_impl::Serialize for ResultReceiver {
         &self,
         parcel: &mut binder::binder_impl::BorrowedParcel<'_>,
     ) -> Result<(), binder::StatusCode> {
-        // return Ok(());
-        println!("Serializing {:?} into parcel", self.binder);
+        // TODO: the service implementation should have called writeTypedObject(), which first writes an integer 0 or 1 to describe nullability:
+        // https://cs.android.com/android/platform/superproject/main/+/main:out/soong/.intermediates/frameworks/base/framework-minus-apex-intdefs/android_common/e18b8e8d84cb9f664aa09a397b08c165/xref50/srcjars.xref/android/os/IPowerStatsService.java;l=92;drc=190beaa49a35da1d9dcf66be9cfccfd23b0eb467
+        parcel.write(&1i32)?;
+        // Only after that the contents of ResultReceiver should be passed:
         // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/ResultReceiver.java;l=125;drc=9e8f83db6d969f1e1f47ffa0b0390d867491235b
-        dbg!(parcel.get_data_size());
-        let r = self.binder.as_binder().serialize(parcel);
-        // let r = self.binder.serialize(parcel);
-        dbg!(parcel.get_data_size());
-        dbg!(r)
+        self.binder.as_binder().serialize(parcel)
     }
 }
 
@@ -68,6 +100,7 @@ impl binder::binder_impl::Deserialize for ResultReceiver {
         parcel: &binder::binder_impl::BorrowedParcel<'_>,
     ) -> Result<Self, binder::StatusCode> {
         use binder::FromIBinder;
+        let is_set: i32 = parcel.read()?; // Same hack because of serialize()
         binder::SpIBinder::deserialize(parcel).map(|binder| Self {
             // Proxy
             binder: todo!(),
@@ -123,11 +156,7 @@ struct ReceiveSupportedPowerMonitors;
 
 impl binder::Interface for ReceiveSupportedPowerMonitors {}
 impl IResultReceiver for ReceiveSupportedPowerMonitors {
-    fn r#send(
-        &self,
-        _arg_resultCode: i32,
-        _arg_resultData: &crate::mangled::_7_android_2_os_6_Bundle,
-    ) -> binder::Result<()> {
+    fn r#send(&self, _arg_resultCode: i32, _arg_resultData: &Bundle) -> binder::Result<()> {
         dbg!(_arg_resultCode, _arg_resultData);
         Ok(())
     }
