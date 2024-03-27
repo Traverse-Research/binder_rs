@@ -1,26 +1,181 @@
-use binder::binder_impl::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+use binder::{
+    binder_impl::{BorrowedParcel, Deserialize, Serialize},
+    StatusCode,
+};
 
 pub(crate) mod mangled {
 
     pub(crate) type _7_android_2_os_6_Bundle = super::Bundle;
 }
 
+#[derive(Clone, Debug, PartialEq, Hash)]
+pub enum Object {
+    Null,
+    ParcelableArray(Vec<Object>),
+    BooleanArray(Vec<bool>),
+}
+
 /// https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/BaseBundle.java
-#[derive(Debug)]
-pub(crate) struct Bundle {}
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct Bundle(HashMap<String, Object>);
 impl Serialize for Bundle {
-    fn serialize(
-        &self,
-        parcel: &mut binder::binder_impl::BorrowedParcel<'_>,
-    ) -> Result<(), binder::StatusCode> {
+    fn serialize(&self, parcel: &mut BorrowedParcel<'_>) -> Result<(), StatusCode> {
         todo!()
     }
 }
 
+// Keep in sync with frameworks/native/include/private/binder/ParcelValTypes.h.
+const VAL_NULL: i32 = -1;
+const VAL_STRING: i32 = 0;
+const VAL_INTEGER: i32 = 1;
+const VAL_MAP: i32 = 2; // length-prefixed
+const VAL_BUNDLE: i32 = 3;
+const VAL_PARCELABLE: i32 = 4; // length-prefixed
+const VAL_SHORT: i32 = 5;
+const VAL_LONG: i32 = 6;
+const VAL_FLOAT: i32 = 7;
+const VAL_DOUBLE: i32 = 8;
+const VAL_BOOLEAN: i32 = 9;
+const VAL_CHARSEQUENCE: i32 = 10;
+const VAL_LIST: i32 = 11; // length-prefixed
+const VAL_SPARSEARRAY: i32 = 12; // length-prefixed
+const VAL_BYTEARRAY: i32 = 13;
+const VAL_STRINGARRAY: i32 = 14;
+const VAL_IBINDER: i32 = 15;
+const VAL_PARCELABLEARRAY: i32 = 16; // length-prefixed
+const VAL_OBJECTARRAY: i32 = 17; // length-prefixed
+const VAL_INTARRAY: i32 = 18;
+const VAL_LONGARRAY: i32 = 19;
+const VAL_BYTE: i32 = 20;
+const VAL_SERIALIZABLE: i32 = 21; // length-prefixed
+const VAL_SPARSEBOOLEANARRAY: i32 = 22;
+const VAL_BOOLEANARRAY: i32 = 23;
+const VAL_CHARSEQUENCEARRAY: i32 = 24;
+const VAL_PERSISTABLEBUNDLE: i32 = 25;
+const VAL_SIZE: i32 = 26;
+const VAL_SIZEF: i32 = 27;
+const VAL_DOUBLEARRAY: i32 = 28;
+const VAL_CHAR: i32 = 29;
+const VAL_SHORTARRAY: i32 = 30;
+const VAL_CHARARRAY: i32 = 31;
+const VAL_FLOATARRAY: i32 = 32;
+
+fn is_length_prefixed(r#type: i32) -> bool {
+    // In general, we want custom types and containers of custom types to be length-prefixed,
+    // this allows clients (eg. Bundle) to skip their content during deserialization. The
+    // exception to this is Bundle, since Bundle is already length-prefixed and already copies
+    // the correspondent section of the parcel internally.
+    matches!(
+        r#type,
+        VAL_MAP
+            | VAL_PARCELABLE
+            | VAL_LIST
+            | VAL_SPARSEARRAY
+            | VAL_PARCELABLEARRAY
+            | VAL_OBJECTARRAY
+            | VAL_SERIALIZABLE
+    )
+}
+
+fn parcel_read_value(parcel: &BorrowedParcel<'_>, r#type: i32) -> Result<Object, StatusCode> {
+    match r#type {
+        VAL_NULL => todo!("VAL_NULL"),
+        VAL_STRING => todo!("VAL_STRING"),
+        VAL_INTEGER => todo!("VAL_INTEGER"),
+        VAL_MAP => todo!("VAL_MAP"),
+        VAL_BUNDLE => todo!("VAL_BUNDLE"),
+        VAL_PARCELABLE => todo!("VAL_PARCELABLE"),
+        VAL_SHORT => todo!("VAL_SHORT"),
+        VAL_LONG => todo!("VAL_LONG"),
+        VAL_FLOAT => todo!("VAL_FLOAT"),
+        VAL_DOUBLE => todo!("VAL_DOUBLE"),
+        VAL_BOOLEAN => todo!("VAL_BOOLEAN"),
+        VAL_CHARSEQUENCE => todo!("VAL_CHARSEQUENCE"),
+        VAL_LIST => todo!("VAL_LIST"),
+        VAL_SPARSEARRAY => todo!("VAL_SPARSEARRAY"),
+        VAL_BYTEARRAY => todo!("VAL_BYTEARRAY"),
+        VAL_STRINGARRAY => todo!("VAL_STRINGARRAY"),
+        VAL_IBINDER => todo!("VAL_IBINDER"),
+        // VAL_PARCELABLEARRAY => {
+        //     // readArrayInternal()
+        //     let n: i32 = parcel.read()?;
+        //     let mut vec = Vec::with_capacity(n as usize);
+        //     for _ in 0..n {
+        //         vec.push(parcel_read_value_type(parcel)?);
+        //     }
+        //     Ok(Object::ParcelableArray(vec))
+        // }
+        VAL_PARCELABLEARRAY => {
+            // readParcelableArrayInternal()
+            let n: i32 = parcel.read()?;
+            let mut vec = Vec::with_capacity(n as usize);
+            for _ in 0..n {
+                // readParcelableInternal
+                let creator: String = parcel.read()?;
+                dbg!(creator);
+                // TODO: Make a lookup table for parcelables!
+                // android.os.PowerMonitor
+                // vec.push(parcel_read_value_type(parcel)?);
+            }
+            Ok(Object::ParcelableArray(vec))
+        }
+        VAL_OBJECTARRAY => todo!("VAL_OBJECTARRAY"),
+        VAL_INTARRAY => todo!("VAL_INTARRAY"),
+        VAL_LONGARRAY => todo!("VAL_LONGARRAY"),
+        VAL_BYTE => todo!("VAL_BYTE"),
+        VAL_SERIALIZABLE => todo!("VAL_SERIALIZABLE"),
+        VAL_SPARSEBOOLEANARRAY => todo!("VAL_SPARSEBOOLEANARRAY"),
+        VAL_BOOLEANARRAY => {
+            // createBooleanArray()
+            let n: i32 = parcel.read()?;
+            dbg!(n);
+            let avail = parcel.get_data_size() - parcel.get_data_position();
+            Ok(
+                if n >= 0 && n <= (avail / std::mem::size_of::<i32>() as i32) {
+                    let mut vec = Vec::with_capacity(n as usize);
+                    for _ in 0..n {
+                        let b: i32 = parcel.read()?;
+                        vec.push(b != 0);
+                    }
+                    Object::BooleanArray(vec)
+                } else {
+                    Object::Null
+                },
+            )
+        }
+        VAL_CHARSEQUENCEARRAY => todo!("VAL_CHARSEQUENCEARRAY"),
+        VAL_PERSISTABLEBUNDLE => todo!("VAL_PERSISTABLEBUNDLE"),
+        VAL_SIZE => todo!("VAL_SIZE"),
+        VAL_SIZEF => todo!("VAL_SIZEF"),
+        VAL_DOUBLEARRAY => todo!("VAL_DOUBLEARRAY"),
+        VAL_CHAR => todo!("VAL_CHAR"),
+        VAL_SHORTARRAY => todo!("VAL_SHORTARRAY"),
+        VAL_CHARARRAY => todo!("VAL_CHARARRAY"),
+        VAL_FLOATARRAY => todo!("VAL_FLOATARRAY"),
+        t => todo!("Unknown Parcel value type {t}"),
+    }
+}
+
+/// https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/Parcel.java;l=4528;drc=190beaa49a35da1d9dcf66be9cfccfd23b0eb467
+fn parcel_read_value_type(parcel: &BorrowedParcel<'_>) -> Result<Object, StatusCode> {
+    let t: i32 = parcel.read()?;
+    dbg!(&t);
+    if is_length_prefixed(t) {
+        let length: i32 = parcel.read()?;
+        dbg!(length);
+        let start = parcel.get_data_position();
+        let r = parcel_read_value(parcel, t)?;
+        assert_eq!(parcel.get_data_position(), start + length);
+        Ok(r)
+    } else {
+        parcel_read_value(parcel, t)
+    }
+}
+
 impl Deserialize for Bundle {
-    fn deserialize(
-        parcel: &binder::binder_impl::BorrowedParcel<'_>,
-    ) -> Result<Self, binder::StatusCode> {
+    fn deserialize(parcel: &BorrowedParcel<'_>) -> Result<Self, StatusCode> {
         dbg!(parcel.get_data_size());
 
         // Parse nullability because of writeTypedObject
@@ -32,7 +187,7 @@ impl Deserialize for Bundle {
         dbg!(length);
         assert!(length >= 0, "Bad length {length}");
         if length == 0 {
-            return Ok(Self {}); // Empty
+            return Ok(Self(HashMap::new())); // Empty
         }
 
         // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/BaseBundle.java;l=1877-1879;drc=190beaa49a35da1d9dcf66be9cfccfd23b0eb467
@@ -46,14 +201,15 @@ impl Deserialize for Bundle {
         // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/BaseBundle.java;l=459;drc=190beaa49a35da1d9dcf66be9cfccfd23b0eb467
         let count: i32 = parcel.read()?;
         dbg!(count);
-        for i in 0..count {
+        let mut map = HashMap::new();
+        for _ in 0..count {
             let str: String = parcel.read()?;
-            dbg!(str);
-            // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/Parcel.java;l=4528;drc=190beaa49a35da1d9dcf66be9cfccfd23b0eb467
-            const VAL_PARCELABLEARRAY: i32 = 16; // length-prefixed
-            let t: i32 = parcel.read()?;
-            dbg!(&t);
+            dbg!(&str);
+
+            // TODO: optimization for sorted parcels!
+            map.insert(str, parcel_read_value_type(parcel)?);
         }
-        Ok(Self {})
+
+        Ok(Self(map))
     }
 }
