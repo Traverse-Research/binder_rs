@@ -176,7 +176,9 @@ impl BpPowerStatsService {
         _arg_resultReceiver: &crate::mangled::_7_android_2_os_14_ResultReceiver,
     ) -> binder::Result<binder::binder_impl::Parcel> {
         let mut aidl_data = self.binder.prepare_transact()?;
+        dbg!(&aidl_data.get_data_size());
         aidl_data.write(_arg_resultReceiver)?;
+        dbg!(&aidl_data.get_data_size());
         Ok(aidl_data)
     }
     fn read_response_getSupportedPowerMonitors(

@@ -1,6 +1,11 @@
 use std::{any::Any, time::Duration};
 
-use binder::binder_impl::Deserialize;
+use binder::{
+    binder_impl::{Deserialize, Parcel},
+    FromIBinder, Strong,
+};
+
+use crate::iresultreceiver::{BnResultReceiver, IResultReceiver};
 
 #[path = "android/hardware/power/stats/mod.rs"]
 pub mod powerstats;
@@ -8,10 +13,12 @@ pub mod powerstats;
 pub(crate) mod mangled {
     pub(crate) use super::powerstats::mangled::*;
 
+    pub(crate) use super::iresultreceiver::mangled::*;
     pub(crate) type _7_android_2_os_14_ResultReceiver = super::ResultReceiver;
     pub(crate) type _7_android_2_os_6_Bundle = super::Bundle;
 }
 
+#[derive(Debug)]
 pub(crate) struct Bundle {}
 impl binder::binder_impl::Serialize for Bundle {
     fn serialize(
@@ -34,10 +41,10 @@ impl binder::binder_impl::Deserialize for Bundle {
 // ERROR: android-frameworks-base/core/java/android/os/ResultReceiver.aidl:20.37-52: Refusing to generate code with unstructured parcelables. Declared parcelables should be in their own file and/or cannot be used with --structured interfaces.
 // Unstructured parcel only has a definition in Java:
 // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/ResultReceiver.java
+#[derive(Debug)]
 pub(crate) struct ResultReceiver {
-    //TODO: Type to IResultReceiver
-    // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/com/android/internal/os/IResultReceiver.aidl?q=IResultReceiver.aidl&ss=android%2Fplatform%2Fsuperproject%2Fmain
-    binder: binder::SpIBinder,
+    // binder: Box<dyn IResultReceiver>,
+    binder: Strong<dyn IResultReceiver>,
 }
 
 impl binder::binder_impl::Serialize for ResultReceiver {
@@ -45,8 +52,14 @@ impl binder::binder_impl::Serialize for ResultReceiver {
         &self,
         parcel: &mut binder::binder_impl::BorrowedParcel<'_>,
     ) -> Result<(), binder::StatusCode> {
+        // return Ok(());
+        println!("Serializing {:?} into parcel", self.binder);
         // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/ResultReceiver.java;l=125;drc=9e8f83db6d969f1e1f47ffa0b0390d867491235b
-        self.binder.serialize(parcel)
+        dbg!(parcel.get_data_size());
+        let r = self.binder.as_binder().serialize(parcel);
+        // let r = self.binder.serialize(parcel);
+        dbg!(parcel.get_data_size());
+        dbg!(r)
     }
 }
 
@@ -54,7 +67,12 @@ impl binder::binder_impl::Deserialize for ResultReceiver {
     fn deserialize(
         parcel: &binder::binder_impl::BorrowedParcel<'_>,
     ) -> Result<Self, binder::StatusCode> {
-        binder::SpIBinder::deserialize(parcel).map(|binder| Self { binder })
+        use binder::FromIBinder;
+        binder::SpIBinder::deserialize(parcel).map(|binder| Self {
+            // Proxy
+            binder: todo!(),
+            // binder: Box::new(IResultReceiver::try_from(binder).unwrap()),
+        })
     }
 }
 
@@ -101,17 +119,45 @@ pub fn android_hardware_power_powerstats() -> binder::Result<()> {
     Ok(())
 }
 
+struct ReceiveSupportedPowerMonitors;
+
+impl binder::Interface for ReceiveSupportedPowerMonitors {}
+impl IResultReceiver for ReceiveSupportedPowerMonitors {
+    fn r#send(
+        &self,
+        _arg_resultCode: i32,
+        _arg_resultData: &crate::mangled::_7_android_2_os_6_Bundle,
+    ) -> binder::Result<()> {
+        dbg!(_arg_resultCode, _arg_resultData);
+        Ok(())
+    }
+}
+
 pub fn android_os_powerstatsservice() -> binder::Result<()> {
     let i = binder::get_interface::<dyn powerstatsservice::IPowerStatsService>("powerstats")?;
     dbg!(&i);
 
-    // i.getSupportedPowerMonitors();
+    let result = ReceiveSupportedPowerMonitors;
+    let binder = BnResultReceiver::new_binder(
+        result,
+        binder::BinderFeatures {
+            set_requesting_sid: true,
+            _non_exhaustive: (),
+        },
+    );
+    let receiver = ResultReceiver { binder };
+    // let parcel = Parcel::new();
+    // parcel.write_binder(receiver);
+    i.getSupportedPowerMonitors(&receiver)?;
+    // i.into_sync();
+    // dbg!(result);
+    dbg!(&receiver);
 
     Ok(())
 }
 
 pub fn pull_data() -> binder::Result<()> {
-    android_hardware_power_powerstats()?;
-    // android_os_powerstatsservice()?;
+    // android_hardware_power_powerstats()?;
+    android_os_powerstatsservice()?;
     Ok(())
 }

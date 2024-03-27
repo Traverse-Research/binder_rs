@@ -676,6 +676,7 @@ impl<'a> BorrowedParcel<'a> {
             // immutable reference, so we clone the binder, incrementing the
             // refcount before the call. The refcount will be immediately
             // decremented when this temporary is dropped.
+            dbg!(binder.cloned().as_native_mut());
             status_result(sys::AParcel_writeStrongBinder(
                 self.as_native_mut(),
                 binder.cloned().as_native_mut(),
