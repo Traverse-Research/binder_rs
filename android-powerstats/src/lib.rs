@@ -13,6 +13,22 @@ pub(crate) mod mangled {
 }
 
 pub(crate) struct Bundle {}
+impl binder::binder_impl::Serialize for Bundle {
+    fn serialize(
+        &self,
+        parcel: &mut binder::binder_impl::BorrowedParcel<'_>,
+    ) -> Result<(), binder::StatusCode> {
+        todo!()
+    }
+}
+
+impl binder::binder_impl::Deserialize for Bundle {
+    fn deserialize(
+        parcel: &binder::binder_impl::BorrowedParcel<'_>,
+    ) -> Result<Self, binder::StatusCode> {
+        todo!()
+    }
+}
 
 // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/ResultReceiver.aidl;l=20;drc=b741c646c69ebdcfbc3287297a312a4ee1aeb5fe
 // ERROR: android-frameworks-base/core/java/android/os/ResultReceiver.aidl:20.37-52: Refusing to generate code with unstructured parcelables. Declared parcelables should be in their own file and/or cannot be used with --structured interfaces.

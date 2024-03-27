@@ -51,72 +51,72 @@ pub trait IResultReceiverAsync<P>: binder::Interface + Send {
         _arg_resultData: &crate::mangled::_7_android_2_os_6_Bundle,
     ) -> std::future::Ready<binder::Result<()>>;
 }
-#[::async_trait::async_trait]
-pub trait IResultReceiverAsyncServer: binder::Interface + Send {
-    fn get_descriptor() -> &'static str
-    where
-        Self: Sized,
-    {
-        "com.android.internal.os.IResultReceiver"
-    }
-    async fn r#send(
-        &self,
-        _arg_resultCode: i32,
-        _arg_resultData: &crate::mangled::_7_android_2_os_6_Bundle,
-    ) -> binder::Result<()>;
-}
-impl BnResultReceiver {
-    /// Create a new async binder service.
-    pub fn new_async_binder<T, R>(
-        inner: T,
-        rt: R,
-        features: binder::BinderFeatures,
-    ) -> binder::Strong<dyn IResultReceiver>
-    where
-        T: IResultReceiverAsyncServer + binder::Interface + Send + Sync + 'static,
-        R: binder::binder_impl::BinderAsyncRuntime + Send + Sync + 'static,
-    {
-        struct Wrapper<T, R> {
-            _inner: T,
-            _rt: R,
-        }
-        impl<T, R> binder::Interface for Wrapper<T, R>
-        where
-            T: binder::Interface,
-            R: Send + Sync,
-        {
-            fn as_binder(&self) -> binder::SpIBinder {
-                self._inner.as_binder()
-            }
-            fn dump(
-                &self,
-                _file: &std::fs::File,
-                _args: &[&std::ffi::CStr],
-            ) -> std::result::Result<(), binder::StatusCode> {
-                self._inner.dump(_file, _args)
-            }
-        }
-        impl<T, R> IResultReceiver for Wrapper<T, R>
-        where
-            T: IResultReceiverAsyncServer + Send + Sync + 'static,
-            R: binder::binder_impl::BinderAsyncRuntime + Send + Sync + 'static,
-        {
-            fn r#send(
-                &self,
-                _arg_resultCode: i32,
-                _arg_resultData: &crate::mangled::_7_android_2_os_6_Bundle,
-            ) -> binder::Result<()> {
-                self._rt
-                    .block_on(self._inner.r#send(_arg_resultCode, _arg_resultData))
-            }
-        }
-        let wrapped = Wrapper {
-            _inner: inner,
-            _rt: rt,
-        };
-        Self::new_binder(wrapped, features)
-    }
-}
+// #[::async_trait::async_trait]
+// pub trait IResultReceiverAsyncServer: binder::Interface + Send {
+//     fn get_descriptor() -> &'static str
+//     where
+//         Self: Sized,
+//     {
+//         "com.android.internal.os.IResultReceiver"
+//     }
+//     async fn r#send(
+//         &self,
+//         _arg_resultCode: i32,
+//         _arg_resultData: &crate::mangled::_7_android_2_os_6_Bundle,
+//     ) -> binder::Result<()>;
+// }
+// impl BnResultReceiver {
+//     /// Create a new async binder service.
+//     pub fn new_async_binder<T, R>(
+//         inner: T,
+//         rt: R,
+//         features: binder::BinderFeatures,
+//     ) -> binder::Strong<dyn IResultReceiver>
+//     where
+//         T: IResultReceiverAsyncServer + binder::Interface + Send + Sync + 'static,
+//         R: binder::binder_impl::BinderAsyncRuntime + Send + Sync + 'static,
+//     {
+//         struct Wrapper<T, R> {
+//             _inner: T,
+//             _rt: R,
+//         }
+//         impl<T, R> binder::Interface for Wrapper<T, R>
+//         where
+//             T: binder::Interface,
+//             R: Send + Sync,
+//         {
+//             fn as_binder(&self) -> binder::SpIBinder {
+//                 self._inner.as_binder()
+//             }
+//             fn dump(
+//                 &self,
+//                 _file: &std::fs::File,
+//                 _args: &[&std::ffi::CStr],
+//             ) -> std::result::Result<(), binder::StatusCode> {
+//                 self._inner.dump(_file, _args)
+//             }
+//         }
+//         impl<T, R> IResultReceiver for Wrapper<T, R>
+//         where
+//             T: IResultReceiverAsyncServer + Send + Sync + 'static,
+//             R: binder::binder_impl::BinderAsyncRuntime + Send + Sync + 'static,
+//         {
+//             fn r#send(
+//                 &self,
+//                 _arg_resultCode: i32,
+//                 _arg_resultData: &crate::mangled::_7_android_2_os_6_Bundle,
+//             ) -> binder::Result<()> {
+//                 self._rt
+//                     .block_on(self._inner.r#send(_arg_resultCode, _arg_resultData))
+//             }
+//         }
+//         let wrapped = Wrapper {
+//             _inner: inner,
+//             _rt: rt,
+//         };
+//         Self::new_binder(wrapped, features)
+//     }
+// }
 pub trait IResultReceiverDefault: Send + Sync {
     fn r#send(
         &self,
