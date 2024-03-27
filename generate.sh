@@ -6,4 +6,5 @@ set -ex
 # aidl --structured --stability=vintf --lang=rust -I$P $P/android/hardware/power/stats/*.aidl -o android-powerstats/src/
 
 P=android-frameworks-base/core/java
-aidl --lang=rust -I$P $P/android/os/IPowerStatsService.aidl -o android-powerstats/src/
+#  $P/android/os/Bundle.aidl
+aidl --lang=rust -I$P $P/android/os/IPowerStatsService.aidl $P/com/android/internal/os/IResultReceiver.aidl -o android-powerstats/src/

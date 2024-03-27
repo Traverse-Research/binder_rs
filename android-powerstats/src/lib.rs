@@ -9,7 +9,10 @@ pub(crate) mod mangled {
     pub(crate) use super::powerstats::mangled::*;
 
     pub(crate) type _7_android_2_os_14_ResultReceiver = super::ResultReceiver;
+    pub(crate) type _7_android_2_os_6_Bundle = super::Bundle;
 }
+
+pub(crate) struct Bundle {}
 
 // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/ResultReceiver.aidl;l=20;drc=b741c646c69ebdcfbc3287297a312a4ee1aeb5fe
 // ERROR: android-frameworks-base/core/java/android/os/ResultReceiver.aidl:20.37-52: Refusing to generate code with unstructured parcelables. Declared parcelables should be in their own file and/or cannot be used with --structured interfaces.
@@ -39,6 +42,8 @@ impl binder::binder_impl::Deserialize for ResultReceiver {
     }
 }
 
+#[path = "com/android/internal/os/IResultReceiver.rs"]
+pub mod iresultreceiver;
 #[path = "android/os/IPowerStatsService.rs"]
 pub mod powerstatsservice;
 
