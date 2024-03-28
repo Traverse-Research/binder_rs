@@ -11,4 +11,5 @@ license.workspace = true
 
 [dependencies]
 binder = { package = "binder_ndk", path = "../binder" }
+bytemuck = "1"
 lazy_static = "1.4.0"

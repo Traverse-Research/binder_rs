@@ -2,26 +2,33 @@ use std::collections::HashMap;
 
 use binder::{
     binder_impl::{BorrowedParcel, Deserialize, Serialize},
-    StatusCode,
+    Parcelable, StatusCode,
 };
 
-pub(crate) mod mangled {
+use crate::android_os_powerstatsservice::PowerMonitor;
 
+pub(crate) mod mangled {
     pub(crate) type _7_android_2_os_6_Bundle = super::Bundle;
 }
 
-#[derive(Clone, Debug, PartialEq, Hash)]
+// pub static CREATORS: Lazy<
+
+// https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/Parcelable.java;l=212;drc=82bdcd7ff7ba4962274f1d88caac0594ae964bef
+// fn register_creator()
+
+// #[derive(Debug, PartialEq, Hash)]
 pub enum Object {
     Null,
-    ParcelableArray(Vec<Object>),
+    ParcelableArray(Vec<Box<dyn Parcelable>>),
     BooleanArray(Vec<bool>),
+    LongArray(Vec<i64>),
 }
 
 /// https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/BaseBundle.java
-#[derive(Clone, Debug, PartialEq)]
-pub(crate) struct Bundle(HashMap<String, Object>);
+// #[derive(Clone, Debug, PartialEq)]
+pub(crate) struct Bundle(pub HashMap<String, Object>);
 impl Serialize for Bundle {
-    fn serialize(&self, parcel: &mut BorrowedParcel<'_>) -> Result<(), StatusCode> {
+    fn serialize(&self, _parcel: &mut BorrowedParcel<'_>) -> Result<(), StatusCode> {
         todo!()
     }
 }
@@ -110,20 +117,34 @@ fn parcel_read_value(parcel: &BorrowedParcel<'_>, r#type: i32) -> Result<Object,
         VAL_PARCELABLEARRAY => {
             // readParcelableArrayInternal()
             let n: i32 = parcel.read()?;
-            let mut vec = Vec::with_capacity(n as usize);
+            let mut vec = Vec::<Box<dyn Parcelable>>::with_capacity(n as usize);
             for _ in 0..n {
                 // readParcelableInternal
                 let creator: String = parcel.read()?;
-                dbg!(creator);
-                // TODO: Make a lookup table for parcelables!
-                // android.os.PowerMonitor
-                // vec.push(parcel_read_value_type(parcel)?);
+                let object = match creator.as_str() {
+                    // TODO: Preregister these?
+                    "android.os.PowerMonitor" => Box::new(
+                        // PowerMonitor::default()
+                        parcel.read::<crate::android_os_powerstatsservice::PowerMonitor>()?,
+                    ),
+
+                    _ => todo!("{creator}"),
+                };
+                vec.push(object);
             }
             Ok(Object::ParcelableArray(vec))
         }
         VAL_OBJECTARRAY => todo!("VAL_OBJECTARRAY"),
         VAL_INTARRAY => todo!("VAL_INTARRAY"),
-        VAL_LONGARRAY => todo!("VAL_LONGARRAY"),
+        VAL_LONGARRAY => {
+            // createLongArray()
+            let n: i32 = parcel.read()?;
+            let mut vec = Vec::with_capacity(n as usize);
+            for _ in 0..n {
+                vec.push(parcel.read()?);
+            }
+            Ok(Object::LongArray(vec))
+        }
         VAL_BYTE => todo!("VAL_BYTE"),
         VAL_SERIALIZABLE => todo!("VAL_SERIALIZABLE"),
         VAL_SPARSEBOOLEANARRAY => todo!("VAL_SPARSEBOOLEANARRAY"),
@@ -172,6 +193,23 @@ fn parcel_read_value_type(parcel: &BorrowedParcel<'_>) -> Result<Object, StatusC
     } else {
         parcel_read_value(parcel, t)
     }
+}
+
+/// https://cs.android.com/android/platform/superproject/main/+/main:frameworks/native/libs/binder/Parcel.cpp;l=2261;drc=82bdcd7ff7ba4962274f1d88caac0594ae964bef
+pub fn parcel_read_string8(parcel: &BorrowedParcel<'_>) -> Result<String, StatusCode> {
+    // TODO: This is wrong, we must also parse a trailing \0 _before_ padding the parcel to 4 bytes again
+    let len: u32 = parcel.read()?;
+    let len_with_nul = len + 1;
+    // TODO: Reading contiguous arrays of predetermined (rounded up for strings) size is hard with current API
+    // Read the as UTF-8 characters with a terminating null, while keeping the parcel 4-byte aligned
+    let words = (0..len_with_nul.div_ceil(4) as usize)
+        .map(|_| parcel.read())
+        .collect::<Result<Vec<u32>, StatusCode>>()?;
+    let chars = bytemuck::cast_slice(&words);
+    assert_eq!(chars[len as usize], b'\0');
+    // TODO: Need to move
+    let str = std::str::from_utf8(&chars[..len as usize]).unwrap();
+    Ok(str.to_owned())
 }
 
 impl Deserialize for Bundle {
