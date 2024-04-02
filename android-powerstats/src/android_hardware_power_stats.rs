@@ -1,13 +1,13 @@
 use std::time::Duration;
 
-use powerstats::IPowerStats;
-
 #[path = "android/hardware/power/stats/mod.rs"]
 pub mod powerstats;
 
 pub(crate) mod mangled {
     pub(crate) use super::powerstats::mangled::*;
 }
+
+pub use powerstats::IPowerStats;
 
 pub fn run() -> binder::Result<()> {
     let descriptor = <IPowerStats::BpPowerStats as IPowerStats::IPowerStats>::get_descriptor();
@@ -17,6 +17,7 @@ pub fn run() -> binder::Result<()> {
 
     // dbg!(i.getPowerEntityInfo())?;
     let meters = dbg!(i.getEnergyMeterInfo())?;
+    dbg!(i.getEnergyConsumerInfo());
     println!("We have {} meters", meters.len());
     // let meter_ids = meters.iter().map(|m| m.id).collect::<Vec<_>>();
     let gpu_meter_ids = meters
@@ -31,6 +32,8 @@ pub fn run() -> binder::Result<()> {
         std::thread::sleep(Duration::from_secs(1));
 
         let consumed = i.getEnergyConsumed(&gpu_meter_ids)?;
+        dbg!(&consumed);
+        dbg!(i.readEnergyMeter(&gpu_meter_ids))?;
         for (prev, cur) in start.iter().zip(&consumed) {
             assert_eq!(prev.id, cur.id);
             let dt = Duration::from_millis((cur.timestampMs - prev.timestampMs) as u64);

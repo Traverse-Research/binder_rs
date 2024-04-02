@@ -10,6 +10,8 @@ description.workspace = true
 license.workspace = true
 
 [dependencies]
+anyhow = "1"
 binder = { package = "binder_ndk", path = "../binder" }
 bytemuck = "1"
 lazy_static = "1.4.0"
+log = "0.4"
