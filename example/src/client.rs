@@ -1,5 +1,5 @@
+use crate::IRemoteService::IRemoteService;
 use binder::Strong;
-use crate::IRemoteService::{IRemoteService};
 
 pub fn run() -> anyhow::Result<()> {
     let my_service: Strong<dyn IRemoteService> = binder::get_interface("myservice").unwrap();

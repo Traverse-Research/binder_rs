@@ -112,7 +112,10 @@ unsafe extern "C" fn serialize_element<T: Serialize>(
         Some(p) => p,
     };
 
-    slice[index].serialize(&mut parcel).err().unwrap_or(StatusCode::OK) as status_t
+    slice[index]
+        .serialize(&mut parcel)
+        .err()
+        .unwrap_or(StatusCode::OK) as status_t
 }
 
 /// Helper trait for types that can be deserialized as arrays.
@@ -503,7 +506,11 @@ impl SerializeOption for str {
                 // `AParcel`. If the string pointer is null,
                 // `AParcel_writeString` requires that the length is -1 to
                 // indicate that we want to serialize a null string.
-                status_result(sys::AParcel_writeString(parcel.as_native_mut(), ptr::null(), -1))
+                status_result(sys::AParcel_writeString(
+                    parcel.as_native_mut(),
+                    ptr::null(),
+                    -1,
+                ))
             },
             Some(s) => unsafe {
                 // Safety: `Parcel` always contains a valid pointer to an
@@ -517,7 +524,10 @@ impl SerializeOption for str {
                 status_result(sys::AParcel_writeString(
                     parcel.as_native_mut(),
                     s.as_ptr() as *const c_char,
-                    s.as_bytes().len().try_into().or(Err(StatusCode::BAD_VALUE))?,
+                    s.as_bytes()
+                        .len()
+                        .try_into()
+                        .or(Err(StatusCode::BAD_VALUE))?,
                 ))
             },
         }
@@ -576,7 +586,9 @@ impl DeserializeArray for Option<String> {}
 
 impl Deserialize for String {
     fn deserialize(parcel: &BorrowedParcel<'_>) -> Result<Self> {
-        Deserialize::deserialize(parcel).transpose().unwrap_or(Err(StatusCode::UNEXPECTED_NULL))
+        Deserialize::deserialize(parcel)
+            .transpose()
+            .unwrap_or(Err(StatusCode::UNEXPECTED_NULL))
     }
 }
 
@@ -651,7 +663,8 @@ impl<T: DeserializeArray, const N: usize> Deserialize for [T; N] {
 impl<T: DeserializeArray, const N: usize> DeserializeOption for [T; N] {
     fn deserialize_option(parcel: &BorrowedParcel<'_>) -> Result<Option<Self>> {
         let vec = DeserializeArray::deserialize_array(parcel)?;
-        vec.map(|v| v.try_into().or(Err(StatusCode::BAD_VALUE))).transpose()
+        vec.map(|v| v.try_into().or(Err(StatusCode::BAD_VALUE)))
+            .transpose()
     }
 }
 
@@ -676,7 +689,10 @@ impl Serialize for Status {
             // and `Status` always contains a valid pointer to an `AStatus`, so
             // both parameters are valid and safe. This call does not take
             // ownership of either of its parameters.
-            status_result(sys::AParcel_writeStatusHeader(parcel.as_native_mut(), self.as_native()))
+            status_result(sys::AParcel_writeStatusHeader(
+                parcel.as_native_mut(),
+                self.as_native(),
+            ))
         }
     }
 }
@@ -850,7 +866,8 @@ macro_rules! impl_deserialize_for_parcelable {
                     Ok(())
                 } else {
                     use $crate::Parcelable;
-                    this.get_or_insert_with(Self::default).read_from_parcel(parcel)
+                    this.get_or_insert_with(Self::default)
+                        .read_from_parcel(parcel)
                 }
             }
         }
@@ -1125,7 +1142,12 @@ mod tests {
 
         assert_eq!(vec, [i64::max_value(), i64::min_value(), 42, -117]);
 
-        let f32s = [std::f32::NAN, std::f32::INFINITY, 1.23456789, std::f32::EPSILON];
+        let f32s = [
+            std::f32::NAN,
+            std::f32::INFINITY,
+            1.23456789,
+            std::f32::EPSILON,
+        ];
 
         unsafe {
             assert!(parcel.set_data_position(start).is_ok());
@@ -1141,7 +1163,12 @@ mod tests {
         assert!(vec[0].is_nan());
         assert_eq!(vec[1..], f32s[1..]);
 
-        let f64s = [std::f64::NAN, std::f64::INFINITY, 1.234567890123456789, std::f64::EPSILON];
+        let f64s = [
+            std::f64::NAN,
+            std::f64::INFINITY,
+            1.234567890123456789,
+            std::f64::EPSILON,
+        ];
 
         unsafe {
             assert!(parcel.set_data_position(start).is_ok());

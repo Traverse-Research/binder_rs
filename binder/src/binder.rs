@@ -459,19 +459,28 @@ impl<I: FromIBinder + ?Sized> Weak<I> {
     /// Construct a new weak reference from a strong reference
     fn new(binder: &Strong<I>) -> Self {
         let weak_binder = binder.as_binder().downgrade();
-        Weak { weak_binder, interface_type: PhantomData }
+        Weak {
+            weak_binder,
+            interface_type: PhantomData,
+        }
     }
 
     /// Upgrade this weak reference to a strong reference if the binder object
     /// is still alive
     pub fn upgrade(&self) -> Result<Strong<I>> {
-        self.weak_binder.promote().ok_or(StatusCode::DEAD_OBJECT).and_then(FromIBinder::try_from)
+        self.weak_binder
+            .promote()
+            .ok_or(StatusCode::DEAD_OBJECT)
+            .and_then(FromIBinder::try_from)
     }
 }
 
 impl<I: FromIBinder + ?Sized> Clone for Weak<I> {
     fn clone(&self) -> Self {
-        Self { weak_binder: self.weak_binder.clone(), interface_type: PhantomData }
+        Self {
+            weak_binder: self.weak_binder.clone(),
+            interface_type: PhantomData,
+        }
     }
 }
 
