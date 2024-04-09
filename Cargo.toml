@@ -5,6 +5,7 @@ members = [
     "binder_ndk_sys",
     "example",
     "tests",
+    "api_gen",
 ]
 
 exclude = ["target/*"]

@@ -23,7 +23,8 @@
 use std::error::Error;
 use std::fmt;
 
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+mod bindings;
+pub use bindings::*;
 
 impl Error for android_c_interface_StatusCode {}
 
