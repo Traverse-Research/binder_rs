@@ -764,6 +764,18 @@ unsafe impl<T: Proxy> AsNative<sys::AIBinder> for T {
     }
 }
 
+/// Retrieve an existing service, returning [`None`] immediately if it doesn't yet
+/// exist.
+pub fn check_service(name: &str) -> Option<SpIBinder> {
+    let name = CString::new(name).ok()?;
+    unsafe {
+        // Safety: `AServiceManager_checkService` returns either a null pointer or
+        // a valid pointer to an owned `AIBinder`. Either of these values is
+        // safe to pass to `SpIBinder::from_raw`.
+        SpIBinder::from_raw(sys::AServiceManager_checkService(name.as_ptr()))
+    }
+}
+
 /// Retrieve an existing service, blocking for a few seconds if it doesn't yet
 /// exist.
 pub fn get_service(name: &str) -> Option<SpIBinder> {
@@ -786,6 +798,12 @@ pub fn wait_for_service(name: &str) -> Option<SpIBinder> {
         // values is safe to pass to `SpIBinder::from_raw`.
         SpIBinder::from_raw(sys::AServiceManager_waitForService(name.as_ptr()))
     }
+}
+
+/// Retrieve an existing service for a particular interface, returning
+/// [`StatusCode::NAME_NOT_FOUND`] immediately if it doesn't yet exist.
+pub fn check_interface<T: FromIBinder + ?Sized>(name: &str) -> Result<Strong<T>> {
+    interface_cast(check_service(name))
 }
 
 /// Retrieve an existing service for a particular interface, blocking for a few
