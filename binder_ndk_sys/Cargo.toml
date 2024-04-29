@@ -8,6 +8,7 @@ description.workspace = true
 repository.workspace = true
 license.workspace = true
 rust-version.workspace = true
+publish.workspace = true
 
 [build-dependencies]
 anyhow = "1"
